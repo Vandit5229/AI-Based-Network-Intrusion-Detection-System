@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI-Powered IDS Dashboard</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #0f172a;
+      color: #e2e8f0;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background: #1e293b;
+      padding: 20px;
+      text-align: center;
+      font-size: 1.5em;
+      font-weight: bold;
+      color: #38bdf8;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 10px;
+    }
+    th, td {
+      padding: 10px;
+      text-align: center;
+      border-bottom: 1px solid #334155;
+    }
+    th {
+      background: #1e293b;
+      color: #94a3b8;
+    }
+    tr.normal {
+      background: #0f172a;
+    }
+    tr.attack {
+      background: #7f1d1d;
+      color: #fee2e2;
+      font-weight: bold;
+    }
+    .status-normal {
+      color: #22c55e;
+      font-weight: bold;
+    }
+    .status-attack {
+      color: #ef4444;
+      font-weight: bold;
+    }
+    footer {
+      text-align: center;
+      padding: 12px;
+      background: #1e293b;
+      color: #94a3b8;
+      position: fixed;
+      width: 100%;
+      bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <header>🔒 Real-Time Intrusion Detection System (AI-Powered)</header>
+
+  <main style="padding: 20px;">
+    <table id="packetTable">
+      <thead>
+        <tr>
+          <th>Time</th>
+          <th>Source IP</th>
+          <th>Destination IP</th>
+          <th>Length</th>
+          <th>Random Forest</th>
+          <th>XGBoost</th>
+          <th>LightGBM</th>
+          <th>Stacking</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </main>
+
+  <footer> @_CopyRight| AI + Cybersecurity IDS</footer>
+
+  <script>
+    async function fetchFlows() {
+      try {
+        const res = await fetch("/flows");
+        const data = await res.json();
+        const tbody = document.querySelector("#packetTable tbody");
+        tbody.innerHTML = "";
+
+        data.forEach(pkt => {
+          const tr = document.createElement("tr");
+          tr.className = pkt.status === "Attack" ? "attack" : "normal";
+          tr.innerHTML = `
+            <td>${pkt.time}</td>
+            <td>${pkt.src}</td>
+            <td>${pkt.dst}</td>
+            <td>${pkt.length}</td>
+            <td>${pkt.predictions["Random Forest"]}</td>
+            <td>${pkt.predictions["XGBoost"]}</td>
+            <td>${pkt.predictions["LightGBM"]}</td>
+            <td>${pkt.predictions["Stacking"]}</td>
+            <td class="${pkt.status === "Attack" ? "status-attack" : "status-normal"}">
+              ${pkt.status}
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+      } catch (err) {
+        console.error("Fetch error:", err);
+      }
+    }
+
+    // Refresh every second
+    setInterval(fetchFlows, 1000);
+    fetchFlows();
+  </script>
+</body>
+</html>
